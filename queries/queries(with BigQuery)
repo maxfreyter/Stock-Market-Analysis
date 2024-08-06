@@ -1,199 +1,108 @@
 -- Checking for date ranges and # of records
-
-SELECT MIN(date) AS min_date, MAX(date) AS max_date, COUNT(*) AS record_count
-  
-FROM portfolio-project-430215.Stock_Prices.stock_prices
-
+SELECT MIN(date) AS min_date,
+       MAX(date) AS max_date,
+       COUNT(*) AS record_count
+FROM portfolio-project-430215.Stock_Prices.stock_prices 
 
 -- Checking for missing values
-
 SELECT *
 FROM portfolio-project-430215.Stock_Prices.stock_prices
 WHERE symbol IS NULL
+  SELECT *
+  FROM portfolio-project-430215.Stock_Prices.stock_prices WHERE `date` IS NULL
+  SELECT *
+  FROM portfolio-project-430215.Stock_Prices.stock_prices WHERE OPEN IS NULL
+  SELECT *
+  FROM portfolio-project-430215.Stock_Prices.stock_prices WHERE high IS NULL
+  SELECT *
+  FROM portfolio-project-430215.Stock_Prices.stock_prices WHERE low IS NULL
+  SELECT *
+  FROM portfolio-project-430215.Stock_Prices.stock_prices WHERE CLOSE IS NULL
+  SELECT *
+  FROM portfolio-project-430215.Stock_Prices.stock_prices WHERE volume IS NULL 
 
-
-SELECT *
-FROM portfolio-project-430215.Stock_Prices.stock_prices
-WHERE `date` IS NULL
-
-SELECT *
-FROM portfolio-project-430215.Stock_Prices.stock_prices
-WHERE open IS NULL
-
-SELECT *
-FROM portfolio-project-430215.Stock_Prices.stock_prices
-WHERE high IS NULL
-
-SELECT *
-FROM portfolio-project-430215.Stock_Prices.stock_prices
-WHERE low IS NULL
-
-
-SELECT *
-FROM portfolio-project-430215.Stock_Prices.stock_prices
-WHERE close IS NULL
-
-SELECT *
-FROM portfolio-project-430215.Stock_Prices.stock_prices
-WHERE volume IS NULL
-
-
--- Checking for duplicates. Combine the symbol and date to get unique results. 
-
+-- Checking for duplicates. Combine the symbol and date to get unique results.
 SELECT symbol, date, COUNT(*) AS cnt
 FROM portfolio-project-430215.Stock_Prices.stock_prices
 GROUP BY symbol, date
 HAVING cnt > 1
-ORDER BY cnt DESC
-
+ORDER BY cnt DESC 
 
 -- Which date in the sample saw the largest overall trading volume?
-
-SELECT 
-  date, 
-  SUM(volume) AS total_volume
-FROM
-  portfolio-project-430215.Stock_Prices.stock_prices
-GROUP BY
-  date
-ORDER BY 
-  total_volume DESC
+SELECT date, SUM(volume) AS total_volume
+FROM portfolio-project-430215.Stock_Prices.stock_prices
+GROUP BY date
+ORDER BY total_volume DESC
 LIMIT 1;
-
 
 -- On that date, which two stocks were traded most?
-
-WITH max_volume_date AS (
-SELECT 
-  date, 
-  SUM(volume) AS total_volume
-FROM
-  portfolio-project-430215.Stock_Prices.stock_prices
-GROUP BY
-  date
-ORDER BY 
-  total_volume DESC
-LIMIT 1
-)
-SELECT
-  symbol,
-  volume
-FROM
-  portfolio-project-430215.Stock_Prices.stock_prices
-WHERE
-  date = (SELECT date FROM max_volume_date)
-ORDER BY
-volume DESC
-LIMIT 2; 
-
+ WITH max_volume_date AS
+  (SELECT date, SUM(volume) AS total_volume
+   FROM portfolio-project-430215.Stock_Prices.stock_prices
+   GROUP BY date
+   ORDER BY total_volume DESC
+   LIMIT 1)
+SELECT symbol,
+       volume
+FROM portfolio-project-430215.Stock_Prices.stock_prices
+WHERE date =
+    (SELECT date
+     FROM max_volume_date)
+ORDER BY volume DESC
+LIMIT 2;
 
 -- On which day of the week does volume tend to be highest? Lowest?
-
-SELECT
-  EXTRACT(DAYOFWEEK FROM date) AS 
-day_of_week,
-  AVG(volume) AS avg_volume
-FROM
-portfolio-project-430215.Stock_Prices.stock_prices
-WHERE 
-  volume > 0
-GROUP BY 
-  day_of_week
-ORDER BY
-  avg_volume DESC;
-
+SELECT EXTRACT(DAYOFWEEK
+               FROM date) AS day_of_week,
+       AVG(volume) AS avg_volume
+FROM portfolio-project-430215.Stock_Prices.stock_prices
+WHERE volume > 0
+GROUP BY day_of_week
+ORDER BY avg_volume DESC;
 
 -- On which date did Amazon (AMZN) see the most volatility, measured by the difference between the high and low price?
-
-SELECT 
-  date, 
-  symbol,
-  (high - low) AS daily_volatility
-FROM
-  portfolio-project-430215.Stock_Prices.stock_prices
-WHERE
-  symbol = 'AMZN'
-ORDER BY
-  daily_volatility DESC
+SELECT date, symbol,
+             (high - low) AS daily_volatility
+FROM portfolio-project-430215.Stock_Prices.stock_prices
+WHERE symbol = 'AMZN'
+ORDER BY daily_volatility DESC
 LIMIT 1;
-    
-    
--- If you could go back in time and invest in one stock from 1/2/2014 - 12/29/2017, which would you choose? What % gain would you realize?
 
-WITH DailyReturns AS (
-  SELECT
-    symbol,
-    date,
-    close,
-    LAG(close) OVER (PARTITION BY symbol ORDER BY date) AS previous_close,
-    SAFE_DIVIDE(close, LAG(close) OVER (PARTITION BY symbol ORDER BY date)) - 1 AS daily_return
-  FROM
-    portfolio-project-430215.Stock_Prices.stock_prices
-),
+--Which stock had the highest cumulative return?
+ WITH DailyReturns AS
+  (SELECT symbol, date, CLOSE,
+                        LAG(CLOSE) OVER (PARTITION BY symbol
+                                         ORDER BY date) AS previous_close,
+                        SAFE_DIVIDE(CLOSE, LAG(CLOSE) OVER (PARTITION BY symbol
+                                                            ORDER BY date)) - 1 AS daily_return
+   FROM portfolio-project-430215.Stock_Prices.stock_prices),
+      CumulativeReturns AS
+  (SELECT symbol, date, CLOSE,
+                        EXP(SUM(LN(1 + daily_return)) OVER (PARTITION BY symbol
+                                                            ORDER BY date)) - 1 AS cumulative_return
+   FROM DailyReturns)
+SELECT symbol, date, cumulative_return
+FROM CumulativeReturns
+ORDER BY symbol, date;
 
-CumulativeReturns AS (
-  SELECT
-    symbol,
-    date,
-    close,
-    EXP(SUM(LN(1 + daily_return)) OVER (PARTITION BY symbol ORDER BY date)) - 1 AS cumulative_return
-  FROM
-    DailyReturns
-)
-
-SELECT
-  symbol,
-  date,
-  cumulative_return
-FROM
-  CumulativeReturns
-ORDER BY
-  symbol,
-  date;
-
-WITH CumulativeReturns AS (
-  WITH DailyReturns AS (
-  SELECT
-    symbol,
-    date,
-    close,
-    LAG(close) OVER (PARTITION BY symbol ORDER BY date) AS previous_close,
-    SAFE_DIVIDE(close, LAG(close) OVER (PARTITION BY symbol ORDER BY date)) - 1 AS daily_return
-  FROM
-    portfolio-project-430215.Stock_Prices.stock_prices
-),
-
-CumulativeReturns AS (
-  SELECT
-    symbol,
-    date,
-    close,
-    EXP(SUM(LN(1 + daily_return)) OVER (PARTITION BY symbol ORDER BY date)) - 1 AS cumulative_return
-  FROM
-    DailyReturns
-)
-
-SELECT
-  symbol,
-  date,
-  cumulative_return
-FROM
-  CumulativeReturns
-ORDER BY
-  symbol,
-  date
-)
-
-SELECT
-  symbol,
-  MAX(cumulative_return) AS 
-final_cumulative_return
-FROM
-  CumulativeReturns
-GROUP BY
-  symbol
-ORDER BY
-  final_cumulative_return DESC
+WITH CumulativeReturns AS
+  (WITH DailyReturns AS
+     (SELECT symbol, date, CLOSE,
+                           LAG(CLOSE) OVER (PARTITION BY symbol
+                                            ORDER BY date) AS previous_close,
+                           SAFE_DIVIDE(CLOSE, LAG(CLOSE) OVER (PARTITION BY symbol
+                                                               ORDER BY date)) - 1 AS daily_return
+      FROM portfolio-project-430215.Stock_Prices.stock_prices),
+        CumulativeReturns AS
+     (SELECT symbol, date, CLOSE,
+                           EXP(SUM(LN(1 + daily_return)) OVER (PARTITION BY symbol
+                                                               ORDER BY date)) - 1 AS cumulative_return
+      FROM DailyReturns) SELECT symbol, date, cumulative_return
+   FROM CumulativeReturns
+   ORDER BY symbol, date)
+SELECT symbol,
+       MAX(cumulative_return) AS final_cumulative_return
+FROM CumulativeReturns
+GROUP BY symbol
+ORDER BY final_cumulative_return DESC
 LIMIT 5;
-
-
