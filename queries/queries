@@ -1,3 +1,5 @@
+
+
 -- Checking for date ranges and # of records
 
 SELECT MIN(date) AS min_date, MAX(date) AS max_date, COUNT(*) AS record_count
