@@ -40,4 +40,9 @@
 | 4 | ALGN | 363.89% | 
 | 5 | SWKS | 324.56% | 
 --- 
-🔗 **Explore more on my GitHub**: [github.com/yourusername/Stock-Market-Analysis](#)
+### 🔍 Key Insights 
+- **NVIDIA (NVDA)** had the highest cumulative return of **1269.75%**, making it the best-performing stock during this period.
+- **August 24, 2015**, saw the largest trading volume, with **BAC** and **AAPL** being the most traded stocks.
+- **Amazon (AMZN)** experienced its highest volatility on **June 9, 2017**, with a price fluctuation of **85.99** points.
+---
+🔗 **Explore more on my GitHub**: [github.com/MaxFreyter](#)
