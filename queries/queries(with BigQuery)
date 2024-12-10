@@ -4,6 +4,12 @@ SELECT MIN(date) AS min_date,
        COUNT(*) AS record_count
 FROM portfolio-project-430215.Stock_Prices.stock_prices 
 
+--RESULT:	
+min_date: 2014-01-02
+max_date: 2017-12-29
+record_count:	497472
+
+
 -- Checking for missing values
 SELECT *
 FROM portfolio-project-430215.Stock_Prices.stock_prices
@@ -21,6 +27,9 @@ WHERE symbol IS NULL
   SELECT *
   FROM portfolio-project-430215.Stock_Prices.stock_prices WHERE volume IS NULL 
 
+--RESULT: No missing values found.
+
+
 -- Checking for duplicates. Combine the symbol and date to get unique results.
 SELECT symbol, date, COUNT(*) AS cnt
 FROM portfolio-project-430215.Stock_Prices.stock_prices
@@ -28,12 +37,19 @@ GROUP BY symbol, date
 HAVING cnt > 1
 ORDER BY cnt DESC 
 
+--RESULT: No duplicates found.
+
 -- Which date in the sample saw the largest overall trading volume?
 SELECT date, SUM(volume) AS total_volume
 FROM portfolio-project-430215.Stock_Prices.stock_prices
 GROUP BY date
 ORDER BY total_volume DESC
 LIMIT 1;
+
+--RESULT: Row	
+date: 2015-08-24
+total_volume: 4607945196
+
 
 -- On that date, which two stocks were traded most?
  WITH max_volume_date AS
@@ -51,6 +67,11 @@ WHERE date =
 ORDER BY volume DESC
 LIMIT 2;
 
+--RESULT: 	
+1. BAC: 214649482
+2. AAPL: 162206292
+
+
 -- On which day of the week does volume tend to be highest? Lowest?
 SELECT EXTRACT(DAYOFWEEK
                FROM date) AS day_of_week,
@@ -60,6 +81,24 @@ WHERE volume > 0
 GROUP BY day_of_week
 ORDER BY avg_volume DESC;
 
+--RESULT:
+1.	
+Friday
+4435826.476735156
+2.	
+Thursday
+4299347.1097871149
+3.	
+Wednesday
+4298572.4201132376
+4.	
+Tuesday
+4188771.0636289748
+5.	
+Monday
+4031171.7639856697
+
+
 -- On which date did Amazon (AMZN) see the most volatility, measured by the difference between the high and low price?
 SELECT date, symbol,
              (high - low) AS daily_volatility
@@ -68,7 +107,11 @@ WHERE symbol = 'AMZN'
 ORDER BY daily_volatility DESC
 LIMIT 1;
 
---Which stock had the highest cumulative return?
+--RESULT: 	
+date: 2017-06-09
+daily_volatility: 85.99
+
+--Which stocks had the highest cumulative return?
  WITH DailyReturns AS
   (SELECT symbol, date, CLOSE,
                         LAG(CLOSE) OVER (PARTITION BY symbol
@@ -106,3 +149,21 @@ FROM CumulativeReturns
 GROUP BY symbol
 ORDER BY final_cumulative_return DESC
 LIMIT 5;
+
+--RESULT:
+1.
+NVDA
+12.679697351828512
+2.	
+AVGO
+4.405887939221274
+3.	
+EA
+4.342531756460807
+4.	
+ALGN
+3.6388693820224756
+5.	
+SWKS
+3.2456204379562044
+
