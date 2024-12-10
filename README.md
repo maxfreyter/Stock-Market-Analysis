@@ -8,7 +8,10 @@
 ### 🛠️ Tools and Technologies Used 
 - **SQL**: For querying and analyzing stock data.
 - **BigQuery**: For handling large datasets.
-- **Markdown**: For documentation.
+- **Markdown**: For documentation. 
+### 📚 Dataset 
+- **Source**: [S&P 500 Stock Prices]([https://www.kaggle.com/](https://app.mavenanalytics.io/datasets?search=s%26p))
+- **Description**: Contains daily stock price data for major companies from 2014 to 2017, including fields like `Date`, `Open`, `Close`, `High`, `Low`, and `Volume`.
 ---
 ### 🧩 Business Task 
 **Task**: Analyze stock price data over a four-year period, focusing on identifying the best-performing stocks, understanding trading volume patterns, and determining key volatility events. The results will help in making informed investment decisions and understanding market dynamics. 
