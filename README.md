@@ -14,7 +14,7 @@
 - **Description**: Contains daily stock price data for major companies from 2014 to 2017, including fields like `Date`, `Open`, `Close`, `High`, `Low`, and `Volume`.
 ---
 ### 🧩 Business Task 
-**Task**: Analyze stock price data over a four-year period, focusing on identifying the best-performing stocks, understanding trading volume patterns, and determining key volatility events. The results will help in making informed investment decisions and understanding market dynamics. 
+#### Task: Analyze stock price data over a four-year period, focusing on identifying the best-performing stocks, understanding trading volume patterns, and determining key volatility events. The results will help in making informed investment decisions and understanding market dynamics. 
 --- 
 ## 📊 Analysis 
 ### 🔹 Largest Trading Volume Day 
